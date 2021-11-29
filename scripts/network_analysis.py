@@ -23,9 +23,6 @@ def get_main_K_core(G):
     return nx.k_core(G)
 
 
-
-
-
 def add_domains_label(G):
     path_to_nodes = root / "input_files" / "filtered_nodes"
     with open(path_to_nodes) as f:
@@ -35,9 +32,10 @@ def add_domains_label(G):
     nx.set_node_attributes(G, dic_attribute)
 
 
-def load_gefx( path_to_graph):
+def load_gefx(path_to_graph):
     G = nx.read_gexf(path_to_graph)
     return G
+
 
 def plot_degree_hist(G):
     x = dict(G.degree(G.nodes()))
@@ -51,26 +49,33 @@ def plot_degree_hist(G):
     plt.grid(True)
     plt.show()
 
+
 def analyze_degree(G):
     plot_degree_hist(G)
     degree_dict = dict(G.degree(G.nodes()))
     max_deg = max(degree_dict.values())
-    domains_with_max_deg = [G.nodes[n[0]]['domain']+"\n" for n in degree_dict.items() if n[1] >1820]
+    domains_with_max_deg = [G.nodes[n[0]]['domain'] + "\n" for n in degree_dict.items() if n[1] == max_deg]
     path_to_full_graph = root / "output_files" / "nodes_with_max_deg.txt"
     with open(path_to_full_graph, "w") as f:
         f.writelines(domains_with_max_deg)
 
 
-
-
+def is_core_connected_after_removal(G):
+    degree_dict = dict(G.degree(G.nodes()))
+    max_deg = max(degree_dict.values())
+    domains_with_max_deg = [n[0] for n in degree_dict.items() if n[1] > 1820]
+    complement = [label for label in list(G.nodes) if label not in domains_with_max_deg]
+    H = G.subgraph(complement)
+    print(f"Subgraph connected: {nx.is_connected(H)}")
 
 
 def main():
     path_to_full_graph = root / "input_files" / "filtered_edges"
     path_to_main_core_graph = root / "output_files" / "main_core.edg"
-    path_to_main_core_gexf = root /"input_files" / "main_core_with_attributes.gexf"
+    path_to_main_core_gexf = root / "input_files" / "main_core_with_attributes.gexf"
     G = load_gefx(path_to_main_core_gexf)
     analyze_degree(G)
+    #is_core_connected_after_removal(G)
 
 
 if __name__ == "__main__":
